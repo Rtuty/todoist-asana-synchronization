@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 )
@@ -15,6 +17,40 @@ type restAPI interface {
 
 type restClient struct {
 	httpAPI httpAPI
+}
+
+func (cl *restClient) Do(req *restRequest) (*restResponse, error) {
+	var p io.Reader
+	if req.Payload != nil {
+		j, err := json.Marshal(req.Payload)
+		if err != nil {
+			return nil, err
+		}
+		p = bytes.NewBuffer(j)
+	}
+	httpreq, err := http.NewRequest(req.Method, req.URL, p)
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range req.Headers {
+		httpreq.Header.Set(k, v)
+	}
+
+	resp, err := cl.httpAPI.Do(httpreq)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	buf := new(bytes.Buffer)
+	if _, err := io.Copy(buf, resp.Body); err != nil {
+		return nil, err
+	}
+
+	return &restResponse{
+		StatusCode: resp.StatusCode,
+		Body:       buf,
+	}, nil
 }
 
 type restRequest struct {

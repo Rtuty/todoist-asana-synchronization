@@ -10,3 +10,10 @@ type Client struct {
 	token   string
 	restAPI restAPI
 }
+
+func New(token string) *Client {
+	return &Client{
+		token:   token,
+		restAPI: newRESTClient(),
+	}
+}
