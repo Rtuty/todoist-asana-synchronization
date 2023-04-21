@@ -29,5 +29,11 @@ func main() {
 		return
 	}
 
+	tasks, err := api.GetActiveTaskById("6795477982")
+	if err != nil {
+		return
+	}
+
 	fmt.Printf("%v", projects)
+	fmt.Printf("%v", tasks)
 }
