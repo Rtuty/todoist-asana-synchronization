@@ -1,11 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os"
-
-	"github.com/volyanyk/todoist"
+	"todoistapi/internal"
 
 	"github.com/joho/godotenv"
 )
@@ -18,22 +15,5 @@ func init() {
 }
 
 func main() {
-	apiToken, exists := os.LookupEnv("APITOKEN")
-	if !exists {
-		panic("Не указан API token todoist'a")
-	}
-
-	api := todoist.New(apiToken)
-	projects, err := api.GetProjects()
-	if err != nil {
-		return
-	}
-
-	tasks, err := api.GetActiveTaskById("6795477982")
-	if err != nil {
-		return
-	}
-
-	fmt.Printf("%v", projects)
-	fmt.Printf("%v", tasks)
+	internal.TodoistFunctionality()
 }
