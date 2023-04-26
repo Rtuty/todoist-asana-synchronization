@@ -1,13 +1,12 @@
-package internal
+package todoist
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/volyanyk/todoist"
 )
 
-func TodoistFunctionality() {
+func TodoistFunctionality() *[]todoist.Task {
 	// Подключаемся к API TODOIST'a
 	apiTodoist, exists := os.LookupEnv("TOKENTODOIST")
 	if !exists {
@@ -42,5 +41,5 @@ func TodoistFunctionality() {
 		panic("Не удалось получить задачи из указанного проекта")
 	}
 
-	fmt.Printf("%v \n", jobTasks)
+	return jobTasks
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"todoistapi/internal"
+	"todoistapi/internal/asana"
 
 	"github.com/joho/godotenv"
 )
@@ -15,5 +15,5 @@ func init() {
 }
 
 func main() {
-	internal.TodoistFunctionality()
+	asana.GetAllUsers()
 }
