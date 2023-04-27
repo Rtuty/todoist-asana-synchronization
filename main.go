@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"todoistapi/internal/asana"
 
@@ -8,12 +9,19 @@ import (
 )
 
 func init() {
-	// loads values from .env into the system
+	// Загружаем в систему переменные из .env
 	if err := godotenv.Load(); err != nil {
 		log.Print("No .env file found")
 	}
 }
 
 func main() {
-	asana.GetAllUsers()
+	asanaClient := asana.GetAsanaToken()
+
+	asanaUserId, err := asana.GetUserIdByName(asanaClient)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s", asanaUserId)
 }
