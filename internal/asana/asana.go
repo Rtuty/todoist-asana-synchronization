@@ -3,6 +3,7 @@ package asana
 import (
 	"fmt"
 	"os"
+	"todoistapi/tools"
 
 	"bitbucket.org/mikehouston/asana-go"
 )
@@ -26,9 +27,7 @@ func GetWorkSpace(client *asana.Client) string {
 		panic("workSpaceName doesn't exist")
 	}
 
-	var pretty bool = true
-
-	mass, err := client.AllWorkspaces(&asana.Options{Pretty: &pretty})
+	mass, err := client.AllWorkspaces(&asana.Options{Pretty: tools.AsRef(true)})
 	if err != nil {
 		panic(err)
 	}
@@ -43,9 +42,7 @@ func GetWorkSpace(client *asana.Client) string {
 
 // Получить id пользователя asana по имени из .env
 func GetUserIdByName(client *asana.Client) (string, error) {
-	var pretty bool = true
-
-	mass, err := client.AllWorkspaces(&asana.Options{Pretty: &pretty})
+	mass, err := client.AllWorkspaces(&asana.Options{Pretty: tools.AsRef(true)})
 	if err != nil {
 		return "", err
 	}
@@ -75,25 +72,23 @@ func GetUserIdByName(client *asana.Client) (string, error) {
 }
 
 func GetTasksByUserId(client *asana.Client, userId string) {
-	var pretty bool = true
 	var workspace string = GetWorkSpace(client)
 
-	tasks, np, err := client.QueryTasks(
+	tasks, _, err := client.QueryTasks(
 		&asana.TaskQuery{
 			Workspace: workspace,
 			Assignee:  userId,
 		},
 		&asana.Options{
-			Pretty: &pretty,
+			Pretty: tools.AsRef(true),
 		},
 	)
 	if err != nil {
 		panic(err)
 	}
 
+	//todo: не возвращает completed, completedat. Возможно, придется дописывать пакет и отправлять pull request
 	for _, v := range tasks {
-		fmt.Println(v.Name)
+		fmt.Println(v.Name, v.Completed, v.CompletedAt, v.Projects, v.ResourceSubtype)
 	}
-
-	fmt.Println(np)
 }
