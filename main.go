@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"todoistapi/internal/asana"
 
@@ -16,12 +15,12 @@ func init() {
 }
 
 func main() {
-	asanaClient := asana.GetAsanaToken()
+	asanaClient := asana.NewClient()
 
 	asanaUserId, err := asana.GetUserIdByName(asanaClient)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("%s", asanaUserId)
+	asana.GetTaskByUserId(asanaClient, asanaUserId)
 }
