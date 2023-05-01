@@ -92,3 +92,13 @@ func GetTasksByUserId(client *asana.Client, userId string) {
 		fmt.Println(v.Name, v.Completed, v.CompletedAt, v.Projects, v.ResourceSubtype)
 	}
 }
+
+func TestFunc(client *asana.Client, userId string) {
+	p := &asana.Project{}
+	tasks, _, err := p.Tasks(client, &asana.Options{Debug: tools.AsRef(true)})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(tasks)
+}

@@ -22,5 +22,7 @@ func main() {
 		panic(err)
 	}
 
-	asana.GetTasksByUserId(asanaClient, asanaUserId)
+	// asana.GetTasksByUserId(asanaClient, asanaUserId)
+
+	asana.TestFunc(asanaClient, asanaUserId)
 }
