@@ -1,8 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"todoistapi/internal/asana"
+	"todoistapi/internal/todoist"
 
 	"github.com/joho/godotenv"
 )
@@ -15,14 +16,17 @@ func init() {
 }
 
 func main() {
-	asanaClient := asana.NewClient()
-
-	asanaUserId, err := asana.GetUserIdByName(asanaClient)
+	tdistClient, err := todoist.NewClient()
 	if err != nil {
-		panic(err)
+		panic("new client error")
 	}
 
-	// asana.GetTasksByUserId(asanaClient, asanaUserId)
+	tdTasks, err := todoist.GetTasks(tdistClient)
+	if err != nil {
+		panic("tasks from todoist not found")
+	}
 
-	asana.TestFunc(asanaClient, asanaUserId)
+	for _, v := range *tdTasks {
+		fmt.Println(v.Content, v.Id, v.CreatedAt)
+	}
 }

@@ -1,45 +1,51 @@
 package todoist
 
 import (
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/volyanyk/todoist"
 )
 
-func TodoistFunctionality() *[]todoist.Task {
-	// Подключаемся к API TODOIST'a
-	apiTodoist, exists := os.LookupEnv("TOKENTODOIST")
+// Получаем токен, создаем и возвращаем новый клиент
+func NewClient() (*todoist.Client, error) {
+	token, exists := os.LookupEnv("TOKENTODOIST")
 	if !exists {
-		panic("Todoist API не найден в .env")
+		return nil, errors.New("todoist API token  not found in .env")
 	}
 
-	api := todoist.New(apiTodoist)
+	client := todoist.New(token)
 
+	return client, nil
+}
+
+func GetTasks(client *todoist.Client) (*[]todoist.Task, error) {
 	// Получаем список проектов
-	projects, err := api.GetProjects()
+	projects, err := client.GetProjects()
 	if err != nil {
-		panic("Ошибка при получении списка проектов")
+		return nil, fmt.Errorf("ошибка при получении списка проектов. details: %v", err)
 	}
 
-	//  Находим id по наименованию, которое указано в .env
+	//  Находим id проекта (папки) по наименованию, которое указано в .env
 	folderName, exists := os.LookupEnv("FOLDERNAME")
 	if !exists {
-		panic("Наименование рабочей папки не найдено в файле .env")
+		return nil, errors.New("наименование рабочей папки не найдено в файле .env")
 	}
 
-	var jobId string
+	var folderId string
 
 	for _, v := range *projects {
 		if v.Name == folderName {
-			jobId = v.ID
+			folderId = v.ID
 		}
 	}
 
 	// Получаем список задач из указанного проекта
-	jobTasks, err := api.GetActiveTasks(todoist.GetActiveTasksRequest{ProjectId: jobId})
+	folderTasks, err := client.GetActiveTasks(todoist.GetActiveTasksRequest{ProjectId: folderId})
 	if err != nil {
-		panic("Не удалось получить задачи из указанного проекта")
+		return nil, fmt.Errorf("не удалось получить задачи из указанного проекта. details: %v", err)
 	}
 
-	return jobTasks
+	return folderTasks, nil
 }
