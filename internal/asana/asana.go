@@ -3,7 +3,6 @@ package asana
 import (
 	"errors"
 	"fmt"
-	"os"
 	"todoistapi/tools"
 
 	"bitbucket.org/mikehouston/asana-go"
@@ -11,9 +10,9 @@ import (
 
 // Получаем токен, создаем и возвращаем новый клиент
 func NewClient() (*asana.Client, error) {
-	token, exists := os.LookupEnv("ASANA_TOKEN")
-	if !exists {
-		return nil, errors.New("asana API token not found in .env")
+	token, err := initAsanaToken()
+	if err != nil {
+		return nil, err
 	}
 
 	client := asana.NewClientWithAccessToken(token)
@@ -23,9 +22,9 @@ func NewClient() (*asana.Client, error) {
 
 // Получаем нужный workspace
 func GetWorkSpace(client *asana.Client) (string, error) {
-	workSpaceName, exists := os.LookupEnv("WORKSPACE_NAME")
-	if !exists {
-		return "", errors.New("workSpaceName doesn't exist")
+	workSpaceName, err := initAsanaWorkSpace()
+	if err != nil {
+		return "", err
 	}
 
 	mass, err := client.AllWorkspaces(&asana.Options{Pretty: tools.AsRef(true)})
@@ -49,8 +48,8 @@ func GetUserIdByName(client *asana.Client) (string, error) {
 		return "", err
 	}
 
-	userName, exists := os.LookupEnv("USER_NAME")
-	if !exists {
+	userName, err := initUserName()
+	if err != nil {
 		return "", err
 	}
 

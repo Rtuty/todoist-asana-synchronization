@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-	redisdb "todoistapi/internal/db/redis"
 
+	"todoistapi/internal/db"
 	"todoistapi/internal/todoist"
 
 	"github.com/joho/godotenv"
@@ -20,12 +20,12 @@ func init() {
 func main() {
 	fmt.Println("----------------------redis test----------------------------")
 
-	rdb, err := redisdb.NewClient()
+	rdb, err := db.NewClient()
 	if err != nil {
 		panic(err)
 	}
 
-	redisdb.GetRedisClient(rdb)
+	db.GetRedisClient(rdb)
 
 	fmt.Println("----------------------redis test----------------------------")
 

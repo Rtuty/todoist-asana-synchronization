@@ -1,18 +1,16 @@
 package todoist
 
 import (
-	"errors"
 	"fmt"
-	"os"
 
 	"github.com/volyanyk/todoist"
 )
 
 // Получаем токен, создаем и возвращаем новый клиент
 func NewClient() (*todoist.Client, error) {
-	token, exists := os.LookupEnv("TOKENTODOIST")
-	if !exists {
-		return nil, errors.New("todoist API token  not found in .env")
+	token, err := initTodoistToken()
+	if err != nil {
+		return nil, err
 	}
 
 	client := todoist.New(token)
@@ -28,9 +26,9 @@ func GetTasks(client *todoist.Client) (*[]todoist.Task, error) {
 	}
 
 	//  Находим id проекта (папки) по наименованию, которое указано в .env
-	folderName, exists := os.LookupEnv("FOLDERNAME")
-	if !exists {
-		return nil, errors.New("наименование рабочей папки не найдено в файле .env")
+	folderName, err := initFolderName()
+	if err != nil {
+		return nil, err
 	}
 
 	var folderId string
