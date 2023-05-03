@@ -1,35 +1,65 @@
-package redis
+package redisdb
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
-func Connect() {
-	fmt.Println("get redis client")
+// Иннициализация данных из .env
+var ctx = context.Background()
 
-	redisAddr, exists := os.LookupEnv("REDIS_ADDR")
+func initAddrPass() (string, string, error) {
+	addr, exists := os.LookupEnv("REDIS_ADDR")
 	if !exists {
-		panic("redis options address doesn't exist")
+		return "", "", errors.New("не удалось получить адрес для redis из файла .env")
 	}
 
-	redisPassword, exists := os.LookupEnv("REDIS_PASS")
+	passw, exists := os.LookupEnv("REDIS_PASS")
 	if !exists {
-		panic("redis options password doesn't exist")
+		return "", "", errors.New("не удалось получить пароль для redis из файла .env")
 	}
 
-	client := redis.NewClient(&redis.Options{
-		Addr:     redisAddr,
-		Password: redisPassword,
+	return addr, passw, nil
+}
+
+func NewClient() (*redis.Client, error) {
+	addr, passw, err := initAddrPass()
+	if err != nil {
+		return nil, err
+	}
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     addr,
+		Password: passw,
 		DB:       0,
 	})
 
-	pong, err := client.Ping().Result()
+	return rdb, nil
+}
+
+// Тестовая функция для проверки корректности работы БД
+func GetRedisClient(rdb *redis.Client) {
+	err := rdb.Set(ctx, "key", "value", 0).Err()
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(pong)
+	val, err := rdb.Get(ctx, "key").Result()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("key", val)
+
+	val2, err := rdb.Get(ctx, "key2").Result()
+	if err == redis.Nil {
+		fmt.Println("key2 does not exist")
+	} else if err != nil {
+		panic(err)
+	} else {
+		fmt.Println("key2", val2)
+	}
 }
