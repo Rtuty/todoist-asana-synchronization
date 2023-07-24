@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
-
+	"todoistapi/internal/asana"
 	"todoistapi/internal/db"
 	"todoistapi/internal/todoist"
 
@@ -18,28 +17,38 @@ func init() {
 }
 
 func main() {
-	fmt.Println("----------------------redis test----------------------------")
-
 	rdb, err := db.NewClient()
 	if err != nil {
-		panic(err)
+		log.Fatalf("get redis client error: %v", err)
 	}
 
-	db.GetRedisClient(rdb)
-
-	fmt.Println("----------------------redis test----------------------------")
+	if err = db.GetRedisClient(rdb); err != nil {
+		log.Fatalf("redis test function error: %v", err)
+	}
 
 	tdistClient, err := todoist.NewClient()
 	if err != nil {
-		panic("new client error")
+		log.Fatalf("todoist get client error: %v", err)
 	}
 
 	tdTasks, err := todoist.GetTasks(tdistClient)
 	if err != nil {
-		panic("tasks from todoist not found")
+		log.Fatalf("todoist get tasts error: %v", err)
 	}
 
 	for _, v := range *tdTasks {
-		fmt.Println(v.Content, v.Id, v.CreatedAt)
+		log.Println(v.Content, v.Id, v.CreatedAt)
 	}
+
+	aCl, err := asana.NewClient()
+	if err != nil {
+		panic(err)
+	}
+
+	usName, err := asana.GetUserIdByName(aCl)
+	if err != nil {
+		panic(err)
+	}
+
+	asana.GetTasksByUserId(aCl, usName)
 }

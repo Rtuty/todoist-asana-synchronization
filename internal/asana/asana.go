@@ -69,7 +69,6 @@ func GetUserIdByName(client *asana.Client) (string, error) {
 	return "", errors.New("get user id not found")
 }
 
-// todo: return and error handeling
 func GetTasksByUserId(client *asana.Client, userId string) {
 	workspace, err := GetWorkSpace(client)
 	if err != nil {
@@ -81,6 +80,9 @@ func GetTasksByUserId(client *asana.Client, userId string) {
 			Workspace: workspace,
 			Assignee:  userId,
 		},
+
+		asana.Fields(asana.Task{}),
+
 		&asana.Options{
 			Pretty: tools.AsRef(true),
 		},
@@ -89,8 +91,9 @@ func GetTasksByUserId(client *asana.Client, userId string) {
 		panic(err)
 	}
 
-	//todo: не возвращает completed, completedat. Возможно, придется дописывать пакет и отправлять pull request
 	for _, v := range tasks {
-		fmt.Println(v.Name, v.Completed, v.CompletedAt, v.Projects, v.ResourceSubtype)
+		if !*v.Completed {
+			fmt.Println(v.Name, *v.Completed, v.CompletedAt, v.Projects, v.ResourceSubtype)
+		}
 	}
 }

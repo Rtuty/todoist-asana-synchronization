@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"errors"
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/redis/go-redis/v9"
@@ -41,25 +41,28 @@ func NewClient() (*redis.Client, error) {
 	return rdb, nil
 }
 
-// Тестовая функция для проверки корректности работы БД
-func GetRedisClient(rdb *redis.Client) {
+// GetRedisClient тестирует корректности работы с redis todo: удалить
+func GetRedisClient(rdb *redis.Client) error {
 	err := rdb.Set(ctx, "key", "value", 0).Err()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	val, err := rdb.Get(ctx, "key").Result()
 	if err != nil {
-		panic(err)
+		return err
 	}
-	fmt.Println("key", val)
+
+	log.Println("key", val)
 
 	val2, err := rdb.Get(ctx, "key2").Result()
 	if err == redis.Nil {
-		fmt.Println("key2 does not exist")
+		log.Println("key2 does not exist")
 	} else if err != nil {
 		panic(err)
 	} else {
-		fmt.Println("key2", val2)
+		log.Println("key2", val2)
 	}
+
+	return nil
 }
