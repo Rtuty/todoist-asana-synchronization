@@ -1,35 +1,32 @@
-package asana
+package asn
 
 import (
+	"bitbucket.org/mikehouston/asana-go"
 	"errors"
 	"fmt"
-	"todoistapi/tools"
-
-	"bitbucket.org/mikehouston/asana-go"
+	"todoistapi/internal/tools"
 )
 
-// Получаем токен, создаем и возвращаем новый клиент
-func NewClient() (*asana.Client, error) {
+// NewAsanaClient возврщает токен, создаем и возвращаем новый клиент
+func NewAsanaClient() (*asana.Client, error) {
 	token, err := initAsanaToken()
 	if err != nil {
 		return nil, err
 	}
 
-	client := asana.NewClientWithAccessToken(token)
-
-	return client, nil
+	return asana.NewClientWithAccessToken(token), nil
 }
 
-// Получаем нужный workspace
+// GetWorkSpace возвращает id workspace по имени из .env
 func GetWorkSpace(client *asana.Client) (string, error) {
 	workSpaceName, err := initAsanaWorkSpace()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("init workspace name error in get workspace function: %v", err)
 	}
 
 	mass, err := client.AllWorkspaces(&asana.Options{Pretty: tools.AsRef(true)})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("get workspaces error: %v", err)
 	}
 
 	for _, v := range mass {
@@ -41,7 +38,7 @@ func GetWorkSpace(client *asana.Client) (string, error) {
 	return "", errors.New("work space not found")
 }
 
-// Получить id пользователя asana по имени из .env
+// GetUserIdByName получает id пользователя asana по имени из .env
 func GetUserIdByName(client *asana.Client) (string, error) {
 	mass, err := client.AllWorkspaces(&asana.Options{Pretty: tools.AsRef(true)})
 	if err != nil {
@@ -69,15 +66,11 @@ func GetUserIdByName(client *asana.Client) (string, error) {
 	return "", errors.New("get user id not found")
 }
 
-func GetTasksByUserId(client *asana.Client, userId string) {
-	workspace, err := GetWorkSpace(client)
-	if err != nil {
-		panic(err)
-	}
-
+// GetUncompletedTasks возвращает незакрытые задачи по userId и workspace id
+func GetUncompletedTasks(client *asana.Client, userId string, workSpaceId string) ([]asana.Task, error) {
 	tasks, _, err := client.QueryTasks(
 		&asana.TaskQuery{
-			Workspace: workspace,
+			Workspace: workSpaceId,
 			Assignee:  userId,
 		},
 
@@ -88,12 +81,16 @@ func GetTasksByUserId(client *asana.Client, userId string) {
 		},
 	)
 	if err != nil {
-		panic(err)
+		return []asana.Task{}, err
 	}
+
+	var res []asana.Task
 
 	for _, v := range tasks {
 		if !*v.Completed {
-			fmt.Println(v.Name, *v.Completed, v.CompletedAt, v.Projects, v.ResourceSubtype)
+			res = append(res, *v)
 		}
 	}
+
+	return res, nil
 }

@@ -3,6 +3,8 @@
 Before working with this project, create a file with the extension .env in the root directory and fill in the following parameters:
 ```
 TOKENTODOIST=
+ASANA_CLIENTID=
+ASANA_CLIENTSECRET=
 ASANA_TOKEN=
 FOLDERNAME=
 USER_NAME=

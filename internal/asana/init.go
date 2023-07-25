@@ -1,4 +1,4 @@
-package asana
+package asn
 
 import (
 	"errors"

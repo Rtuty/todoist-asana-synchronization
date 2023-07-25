@@ -6,8 +6,8 @@ import (
 	"github.com/volyanyk/todoist"
 )
 
-// Получаем токен, создаем и возвращаем новый клиент
-func NewClient() (*todoist.Client, error) {
+// NewTdIstClient возвращает подключение(клиент) к api todoist
+func NewTdIstClient() (*todoist.Client, error) {
 	token, err := initTodoistToken()
 	if err != nil {
 		return nil, err
@@ -18,6 +18,7 @@ func NewClient() (*todoist.Client, error) {
 	return client, nil
 }
 
+// GetTasks
 func GetTasks(client *todoist.Client) (*[]todoist.Task, error) {
 	// Получаем список проектов
 	projects, err := client.GetProjects()
