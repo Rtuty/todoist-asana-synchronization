@@ -3,11 +3,13 @@ package app
 import (
 	"context"
 	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 	"log"
 	"strconv"
-	"todoistapi/internal/asana"
 	"todoistapi/internal/db"
-	"todoistapi/internal/todoist"
+	"todoistapi/internal/task-managers/asana"
+	"todoistapi/internal/task-managers/todoist"
+	"todoistapi/internal/tools"
 )
 
 func init() {
@@ -18,13 +20,18 @@ func init() {
 
 func RunInstance() {
 	ctx := context.Background()
+	viperCon := viper.New()
+	viperCon.AutomaticEnv()
 
-	rdb, err := db.NewRedisClient()
+	rc := db.RedisCli{V: viperCon}
+	td := todoist.GetTodoistFnc(viperCon)
+
+	rdb, err := rc.NewRedisClient()
 	if err != nil {
 		log.Fatalf("get redis client error: %v", err)
 	}
 
-	tdCl, err := todoist.NewTdIstClient()
+	tdCl, err := td.NewTdIstClient()
 	if err != nil {
 		log.Fatalf("get todoist client error: %v", err)
 	}
@@ -34,7 +41,12 @@ func RunInstance() {
 		log.Fatalf("get asana client error: %v", err)
 	}
 
-	tdTasks, err := todoist.GetTasks(tdCl)
+	folderName, err := tools.GetStringFromEnv("FOLDERNAME")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tdTasks, err := td.GetTasksByFolderId(tdCl, todoist.Args{FolderName: folderName, Completed: true})
 	if err != nil {
 		log.Fatalf("todoist get tasts error: %v", err)
 	}
