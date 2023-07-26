@@ -24,6 +24,8 @@ func RunInstance() {
 	viperCon.AutomaticEnv()
 
 	rc := db.RedisCli{V: viperCon}
+
+	as := asn.GetAsanaFnc(viperCon)
 	td := todoist.GetTodoistFnc(viperCon)
 
 	rdb, err := rc.NewRedisClient()
@@ -36,7 +38,7 @@ func RunInstance() {
 		log.Fatalf("get todoist client error: %v", err)
 	}
 
-	asCl, err := asn.NewAsanaClient()
+	asCl, err := as.NewAsanaClient()
 	if err != nil {
 		log.Fatalf("get asana client error: %v", err)
 	}
@@ -55,17 +57,17 @@ func RunInstance() {
 		log.Println(v.Content, v.Id, v.CreatedAt)
 	}
 
-	usName, err := asn.GetUserIdByName(asCl)
+	usName, err := as.GetUserIdByName(asCl)
 	if err != nil {
 		panic(err)
 	}
 
-	wsId, err := asn.GetWorkSpace(asCl)
+	wsId, err := as.GetWorkSpace(asCl)
 	if err != nil {
 		log.Printf("get workspace error: %v", err)
 	}
 
-	tasks, err := asn.GetUncompletedTasks(asCl, usName, wsId)
+	tasks, err := as.GetUncompletedTasks(asCl, usName, wsId)
 	if err != nil {
 		log.Printf("get uncompleted tasks error: %v", err)
 	}

@@ -8,8 +8,8 @@ import (
 )
 
 // NewAsanaClient возврщает токен, создаем и возвращаем новый клиент
-func NewAsanaClient() (*asana.Client, error) {
-	token, err := initAsanaToken()
+func (cl *AsanaCli) NewAsanaClient() (*asana.Client, error) {
+	token, err := tools.GetStringFromEnv("ASANA_TOKEN")
 	if err != nil {
 		return nil, err
 	}
@@ -18,8 +18,8 @@ func NewAsanaClient() (*asana.Client, error) {
 }
 
 // GetWorkSpace возвращает id workspace по имени из .env
-func GetWorkSpace(client *asana.Client) (string, error) {
-	workSpaceName, err := initAsanaWorkSpace()
+func (cl *AsanaCli) GetWorkSpace(client *asana.Client) (string, error) {
+	workSpaceName, err := tools.GetStringFromEnv("WORKSPACE_NAME")
 	if err != nil {
 		return "", fmt.Errorf("init workspace name error in get workspace function: %v", err)
 	}
@@ -39,13 +39,13 @@ func GetWorkSpace(client *asana.Client) (string, error) {
 }
 
 // GetUserIdByName получает id пользователя asana по имени из .env
-func GetUserIdByName(client *asana.Client) (string, error) {
+func (cl *AsanaCli) GetUserIdByName(client *asana.Client) (string, error) {
 	mass, err := client.AllWorkspaces(&asana.Options{Pretty: tools.AsRef(true)})
 	if err != nil {
 		return "", err
 	}
 
-	userName, err := initUserName()
+	userName, err := tools.GetStringFromEnv("USER_NAME")
 	if err != nil {
 		return "", err
 	}
@@ -67,7 +67,7 @@ func GetUserIdByName(client *asana.Client) (string, error) {
 }
 
 // GetUncompletedTasks возвращает незакрытые задачи по userId и workspace id
-func GetUncompletedTasks(client *asana.Client, userId string, workSpaceId string) ([]asana.Task, error) {
+func (cl *AsanaCli) GetUncompletedTasks(client *asana.Client, userId string, workSpaceId string) ([]asana.Task, error) {
 	tasks, _, err := client.QueryTasks(
 		&asana.TaskQuery{
 			Workspace: workSpaceId,
