@@ -6,6 +6,7 @@ require (
 	bitbucket.org/mikehouston/asana-go v0.0.0-20221230134324-ca4a5f164c12
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.0.4
+	github.com/spf13/viper v1.16.0
 	github.com/volyanyk/todoist v1.0.1
 )
 
@@ -27,7 +28,6 @@ require (
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.16.0 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect

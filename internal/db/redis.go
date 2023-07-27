@@ -6,14 +6,16 @@ import (
 )
 
 type RedisCli struct {
-	V *viper.Viper
+	Addr string
+	Pass string
+	V    *viper.Viper
 }
 
 // NewRedisClient возвращает подключение(клиент) к базе данных redis
 func (rdc *RedisCli) NewRedisClient() (*redis.Client, error) {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     rdc.V.GetString("REDIS_ADDR"),
-		Password: rdc.V.GetString("REDIS_PASS"),
+		Addr:     rdc.Addr,
+		Password: rdc.Pass,
 		DB:       0, //todo
 	})
 
