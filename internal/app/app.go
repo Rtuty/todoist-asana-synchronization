@@ -8,6 +8,7 @@ import (
 	"todoistapi/internal/db"
 	asn "todoistapi/internal/task-managers/asana"
 	"todoistapi/internal/task-managers/todoist"
+	"todoistapi/internal/tools"
 )
 
 func init() {
@@ -22,19 +23,29 @@ func RunInstance() {
 	vpr := viper.New()
 	vpr.AutomaticEnv()
 
-	rc := db.RedisCli{
-		Addr: vpr.GetString("REDIS_PASS"),
-		Pass: vpr.GetString("REDIS_ADDR"),
-		V:    vpr,
+	rAddr, err := tools.GetStringFromEnv("REDIS_ADDR")
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	as := asn.GetAsanaFnc(vpr)
-	td := todoist.GetTodoistFnc(vpr)
+	rPass, err := tools.GetStringFromEnv("REDIS_PASS")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rc := db.RedisCli{
+		Addr: rAddr,
+		Pass: rPass,
+		V:    vpr,
+	}
 
 	rdb, err := rc.NewRedisClient()
 	if err != nil {
 		log.Fatalf("get redis client error: %v", err)
 	}
+
+	as := asn.GetAsanaFnc(vpr)
+	td := todoist.GetTodoistFnc(vpr)
 
 	h := CmdHandler{
 		Ctx:   ctx,

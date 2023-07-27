@@ -5,14 +5,16 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/redis/go-redis/v9"
-	"github.com/spf13/viper"
 	"github.com/volyanyk/todoist"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	asn "todoistapi/internal/task-managers/asana"
 	tdist "todoistapi/internal/task-managers/todoist"
+
+	"github.com/redis/go-redis/v9"
+	"github.com/spf13/viper"
 )
 
 type CmdHandler struct {
@@ -25,6 +27,8 @@ type CmdHandler struct {
 }
 
 func (h *CmdHandler) CommandLineHandler() {
+	var errLog []string
+
 	scn := bufio.NewScanner(os.Stdin)
 
 	asCl, err := h.AsnFn.NewAsanaClient()
@@ -37,39 +41,52 @@ func (h *CmdHandler) CommandLineHandler() {
 		log.Fatalf("get todoist client error: %v", err)
 	}
 
+	errCh := make(chan error)
+
 	for {
 		fmt.Print("command: \n")
 		scn.Scan()
 
 		cmd := scn.Text()
-
 		cmd = strings.TrimSuffix(cmd, "\n")
 
 		switch cmd {
 		case "sync_td":
-			go h.asanaToTodoistSyncTasks(h.Ctx, asCl, tdCl)
+			go h.asanaToTodoistSyncTasks(h.Ctx, asCl, tdCl, errCh)
 		case "exit":
-			fmt.Println("program break")
+			close(errCh)
+
+			for index, message := range errLog {
+				log.Println("errors program log: \n index "+strconv.Itoa(index)+"error message: ", message+"\n")
+			}
+
+			log.Println("program break")
 			return
 		}
+
+		go func(errs chan error) {
+			for err := range errs {
+				errLog = append(errLog, fmt.Sprintf("%v", err))
+			}
+		}(errCh)
 	}
 }
 
 // asanaToTodoistSyncTasks Переносит незавершенные задачи из проекта asana в todoist
-func (h *CmdHandler) asanaToTodoistSyncTasks(ctx context.Context, aCl *asana.Client, tCl *todoist.Client) {
+func (h *CmdHandler) asanaToTodoistSyncTasks(ctx context.Context, aCl *asana.Client, tCl *todoist.Client, errCh chan error) {
 	usrId, err := h.AsnFn.GetUserIdByName(aCl)
 	if err != nil {
-		log.Print(err)
+		errCh <- err
 	}
 
 	wrkSpName, err := h.AsnFn.GetWorkSpace(aCl)
 	if err != nil {
-		log.Print(err)
+		errCh <- err
 	}
 
 	asnTsks, err := h.AsnFn.GetUncompletedTasks(aCl, usrId, wrkSpName)
 	if err != nil {
-		log.Print(err)
+		errCh <- err
 	}
 
 	for _, t := range asnTsks {
@@ -80,7 +97,7 @@ func (h *CmdHandler) asanaToTodoistSyncTasks(ctx context.Context, aCl *asana.Cli
 
 		_, err := tCl.AddTaskContext(new, ctx)
 		if err != nil {
-			log.Print(err)
+			errCh <- err
 		}
 	}
 }
